@@ -4,19 +4,23 @@ Linux driver for I2C TPM compliant with TCG specification
 This patch can be used to create a driver for an STMicroelectronics TPM withan I²C interface in a 5.4 Linux kernel.
 It also improves the performance with an optimized polling during the communication with the TPM. 
 
-Tested with :
+##Tested with :
 
-Platform : Raspberry Pi 3B+, Raspberry Pi 4B
-OS : Raspbian 
-Linux kernel version : 5.4.83, downloaded from https://github.com/raspberrypi/linux
-TPM family : ST33TPHF20I2C, ST33TPHF2XI2C, ST33TPHF2EI2C, ST33GTPMAI2C, ST33GTPMII2C
+###Platform :
+Raspberry Pi 3B+, Raspberry Pi 4B
+###OS : 
+Raspbian 
+###Linux kernel version : 
+5.4.83, downloaded from https://github.com/raspberrypi/linux
+###TPM family :
+ST33TPHF20I2C, ST33TPHF2XI2C, ST33TPHF2EI2C, ST33GTPMAI2C, ST33GTPMII2C
 
 
 To apply the patch, download Linux kernel sources, copy the patch into the linux/drivers/char directory, and run from the char directory with :
-patch -b -p0 < patchTPMv_5_4_2.patch
+'patch -b -p0 < patchTPMv_5_4_2.patch'
 
 
-Patch version : 5.4.2
+###Patch version : 5.4.2
 CHANGELOG : 
 
 5.4.2 : 
