@@ -13,7 +13,7 @@ Raspbian
 ### Linux kernel version : 
 5.4.83, downloaded from https://github.com/raspberrypi/linux
 ### TPM family :
-ST33TPHF20I2C, ST33TPHF2XI2C, ST33TPHF2EI2C, ST33GTPMAI2C, ST33GTPMII2C
+[ST33TPHF20I2C](https://www.st.com/en/secure-mcus/st33tphf20i2c.html), [ST33TPHF2XI2C](https://www.st.com/en/secure-mcus/st33tphf2xi2c.html), [ST33TPHF2EI2C](https://www.st.com/en/secure-mcus/st33tphf2ei2c.html), [ST33GTPMAI2C](https://www.st.com/en/secure-mcus/st33gtpmai2c.html), [ST33GTPMII2C](https://www.st.com/en/secure-mcus/st33gtpmii2c.html)
 
 
 To apply the patch, download Linux kernel sources, copy the patch into the linux/drivers/char directory, and run from the char directory with :
