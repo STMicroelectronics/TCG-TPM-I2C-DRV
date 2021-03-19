@@ -5,6 +5,7 @@ This patch can be used to create a driver for an STMicroelectronics TPM withan I
 It also improves the performance with an optimized polling during the communication with the TPM. 
 
 Tested with :
+
 Platform : Raspberry Pi 3B+, Raspberry Pi 4B
 OS : Raspbian 
 Linux kernel version : 5.4.83, downloaded from https://github.com/raspberrypi/linux
