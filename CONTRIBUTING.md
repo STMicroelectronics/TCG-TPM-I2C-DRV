@@ -12,3 +12,7 @@ Please check the following boxes before posting an issue:
 
 ### 2. Posting the issue
 When you have checked the previous boxes. You will find two templates (Bug Report or Other Issue) available in the **Issues** tab of the repository ([link](https://github.com/STMicroelectronics/TCG-TPM-I2C-DRV/issues)).
+
+### 3. Pull Requests
+
+Pull-requests are **not** accepted on this repository. Please use **issues** to report any bug or request.
