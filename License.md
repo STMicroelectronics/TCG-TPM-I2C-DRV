@@ -2,7 +2,7 @@
  https://opensource.org/licenses/GPL-2.0
  
  * Copyright (c) 2014-2019 Nuvoton Technology corporation
- * Copyright (c) 2020, STMICROELECTRONICS International, NV All rights reserved.
+ * Copyright (c) 2022, STMICROELECTRONICS International, NV All rights reserved.
  
   TPM TIS I2C
  
