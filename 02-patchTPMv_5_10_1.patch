@@ -1,0 +1,250 @@
+diff -Nur tpm/tpm_tis_core.c tpm_patch/tpm_tis_core.c
+--- tpm/tpm_tis_core.c	2022-06-16 10:53:18.027638055 +0800
++++ tpm_patch/tpm_tis_core.c	2022-06-16 10:53:54.467063549 +0800
+@@ -100,10 +100,10 @@
+ 	bool canceled = false;
+ 	/* check current status */
+ 	status = chip->ops->status(chip);
+-	
+-	if ((status & mask) == mask_result)		
+-					return 0;
+-					
++
++	if ((status & mask) == mask_result)
++		return 0;
++
+ 	stop = jiffies + timeout;
+ 
+ 	if (chip->flags & TPM_CHIP_FLAG_IRQ) {
+@@ -129,10 +129,10 @@
+ 			usleep_range(TPM_TIMEOUT_USECS_MIN,
+ 				     TPM_TIMEOUT_USECS_MAX);
+ 			status = chip->ops->status(chip);
+-			
+-			if ((status & mask) == mask_result)		
++
++			if ((status & mask) == mask_result)
+ 					return 0;
+-			
++
+ 		} while (time_before(jiffies, stop));
+ 	}
+ 	return -ETIME;
+@@ -268,7 +268,7 @@
+ 	return status;
+ }
+ 
+-static bool tpm_tis_check_data(struct tpm_chip *chip, const u8 *buf, 
++static bool tpm_tis_check_data(struct tpm_chip *chip, const u8 *buf,
+ size_t len) {
+ 	struct tpm_tis_data *priv = dev_get_drvdata(&chip->dev);
+ 
+@@ -343,23 +343,26 @@
+ static int tpm_tis_recv(struct tpm_chip *chip, u8 *buf, size_t count)
+ {
+ 	struct tpm_tis_data *priv = dev_get_drvdata(&chip->dev);
+-	int size = 0;
++	int ret = 0;
++	size_t size = 0;
+ 	int status,i;
+ 	u32 expected;
+ 	bool check_data = false;
+ 
+-	for (i = 0; i < TPM_RETRY; i++) 
++	for (i = 0; i < TPM_RETRY; i++)
+ 	{
+ 		if (count < TPM_HEADER_SIZE) {
+ 			size = -EIO;
+ 			goto out;
+ 		}
+-	size = recv_data(chip, buf, TPM_HEADER_SIZE);
++
++	ret = recv_data(chip, buf, TPM_HEADER_SIZE);
+ 	/* read first 10 bytes, including tag, paramsize, and result */
+-	if (size < TPM_HEADER_SIZE) {
++	if (ret < TPM_HEADER_SIZE || ret < 0) {
+ 		dev_err(&chip->dev, "Unable to read header\n");
+ 		goto out;
+ 	}
++	size = ret;
+ 
+ 	expected = be32_to_cpu(*(__be32 *) (buf + 2));
+ 	if (expected > count || expected < TPM_HEADER_SIZE) {
+@@ -367,8 +370,14 @@
+ 		goto out;
+ 	}
+ 
+-	size += recv_data(chip, &buf[TPM_HEADER_SIZE],
++	ret = recv_data(chip, &buf[TPM_HEADER_SIZE],
+ 			  expected - TPM_HEADER_SIZE);
++	if (ret < 0) {
++		dev_err(&chip->dev, "recv data failed ,error:%d\n",ret);
++		goto out;
++	}
++
++	size += ret;
+ 	if (size < expected) {
+ 		dev_err(&chip->dev, "Unable to read remainder of result\n");
+ 		size = -ETIME;
+@@ -379,24 +388,23 @@
+ 				      &priv->int_queue, false) < 0) {
+ 			size = -ETIME;
+ 			goto out;
+-		}
+-
+-		status = tpm_tis_status(chip);
+-		if (status & TPM_STS_DATA_AVAIL) {	/* retry? */
+-			dev_err(&chip->dev, "Error left over data\n");
+-			size = -EIO;
+-			goto out;
+-		}
+-
+-		check_data = tpm_tis_check_data(chip, buf, size);
+-		if (!check_data)
+-			tpm_tis_write8(priv, TPM_STS(priv->locality),
+-				       TPM_STS_RESPONSE_RETRY);
+-		else break;
+ 	}
++	status = tpm_tis_status(chip);
++	if (status & TPM_STS_DATA_AVAIL) {	/* retry? */
++		dev_err(&chip->dev, "Error left over data\n");
++		size = -EIO;
++		goto out;
++	}
++
++	check_data = tpm_tis_check_data(chip, buf, size);
++	if (!check_data)
++		tpm_tis_write8(priv, TPM_STS(priv->locality),
++					TPM_STS_RESPONSE_RETRY);
++	else break;
++}
+ 
+-		if (!check_data)
+-		 size = -EIO;
++	if (!check_data)
++		size = -EIO;
+ 
+ out:
+ 	tpm_tis_ready(chip);
+@@ -413,7 +421,6 @@
+ 	struct tpm_tis_data *priv = dev_get_drvdata(&chip->dev);
+ 	int rc, status, burstcnt;
+ 	size_t count = 0;
+-	
+ 
+ 	status = tpm_tis_status(chip);
+ 	if ((status & TPM_STS_COMMAND_READY) == 0) {
+@@ -453,7 +460,7 @@
+ 
+ 	if (rc < 0)
+ 		goto out_err;
+-		
++
+ 	if (wait_for_tpm_stat_result(chip, TPM_STS_VALID | TPM_STS_DATA_EXPECT, TPM_STS_VALID , chip->timeout_a,
+ 					&priv->int_queue, false) < 0) {
+ 			rc = -ETIME;
+@@ -501,10 +508,6 @@
+ 	u32 ordinal;
+ 	unsigned long dur;
+ 	bool data_valid = false;
+-	
+-	//rc = tpm_tis_send_data(chip, buf, len);
+-	//if (rc < 0)
+-	//	return rc;
+ 
+ 	/* go and do it */
+ 	for (i = 0; i < TPM_RETRY && !data_valid; i++) {
+@@ -515,7 +518,7 @@
+ 	}
+ 	if (!data_valid)
+ 		return -EIO;
+-	
++
+ 	rc = tpm_tis_write8(priv, TPM_STS(priv->locality), TPM_STS_GO);
+ 	if (rc < 0)
+ 		goto out_err;
+diff -Nur tpm/tpm_tis_i2c.c tpm_patch/tpm_tis_i2c.c
+--- tpm/tpm_tis_i2c.c	2022-06-16 10:53:18.031637991 +0800
++++ tpm_patch/tpm_tis_i2c.c	2022-06-16 10:53:54.467063549 +0800
+@@ -37,6 +37,8 @@
+ #define TPM_I2C_DID_VID                0x48
+ #define TPM_I2C_RID                    0x4C
+ 
++#define I2C_READ_MAX 0xff //Maximum length for a single read via I2C
++
+ struct tpm_tis_i2c_phy {
+ 	struct tpm_tis_data priv;
+ 	struct i2c_client *i2c_client;
+@@ -73,7 +75,9 @@
+ 	struct tpm_tis_i2c_phy *phy = to_tpm_tis_i2c_phy(data);
+ 	int ret = 0;
+ 	int i = 0;
++	u8 read_result[1024]={0};
+ 	u8 reg = address_to_register(addr);
++	u16 read_times = 0,read_len=0;
+ 	struct i2c_msg msgs[] = {
+ 		{
+ 			.addr = phy->i2c_client->addr,
+@@ -83,21 +87,40 @@
+ 		{
+ 			.addr = phy->i2c_client->addr,
+ 			.len = len,
+-			.buf = result,
++			.buf = read_result,
+ 			.flags = I2C_M_RD,
+ 		},
+ 	};
+ 
+     do
+     {
+-	ret = i2c_transfer(phy->i2c_client->adapter, msgs, ARRAY_SIZE(msgs));
+-	usleep_range(250, 300); // wait default GUARD_TIME of 250µs
+ 
+-	} while(ret < 0 && i < TPM_RETRY );
++		if(len > I2C_READ_MAX){
++			read_times = len/I2C_READ_MAX;
++
++			while(read_times--){
++					msgs[1].len = I2C_READ_MAX;
++					ret = i2c_transfer(phy->i2c_client->adapter, msgs, ARRAY_SIZE(msgs));
++					usleep_range(250, 300); 
++
++					read_len += msgs[1].len;
++					msgs[1].buf = read_result + read_len;
++			}
++
++			msgs[1].len = len % I2C_READ_MAX;
++		}
++		ret = i2c_transfer(phy->i2c_client->adapter, msgs, ARRAY_SIZE(msgs));
++		usleep_range(250, 300); // wait default GUARD_TIME of 250µs
++
++	} while(ret < 0 && ++i < TPM_RETRY );
+ 	
+ 	if (ret < 0)
++	{
++		pr_err("TPM i2c transfer data failed ,error:%d\n",ret);
+ 		return ret;
++	}
+ 
++	memcpy(result,read_result,len);
+ 	
+ 
+ 	return 0;
+@@ -131,7 +154,7 @@
+ 					   ARRAY_SIZE(msgs));
+ 			usleep_range(250, 300); // wait default GUARD_TIME of 250µs
+ 
+-			} while(ret < 0 && i < TPM_RETRY );
++			} while(ret < 0 && ++i < TPM_RETRY );
+ 		}
+ 	} else {
+ 		u8 reg = address_to_register(addr);
+@@ -154,7 +177,7 @@
+ 		ret = i2c_transfer(phy->i2c_client->adapter, msgs, ARRAY_SIZE(msgs));
+ 	   usleep_range(250, 300); // wait default GUARD_TIME of 250µs
+ 
+-		} while(ret < 0 && i < TPM_RETRY );
++		} while(ret < 0 && ++i < TPM_RETRY );
+ 	}
+ 
+ 	if (ret < 0)
