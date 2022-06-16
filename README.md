@@ -22,6 +22,7 @@ Raspbian
 #### copy the patch into the linux/drivers/char directory
 #### run from the char directory with :
 patch -b -p0 < patchTPMv_5_10_1.patch
+
 patch -b -p0 < 02-patchTPMv_5_10_1.patch
 
 #### 02-patchTPMv_5_10_1.patch:
