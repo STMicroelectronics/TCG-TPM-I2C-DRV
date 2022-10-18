@@ -511,7 +511,7 @@ diff -Naur tpm_orig/tpm_tis_i2c.c tpm/tpm_tis_i2c.c
 +	ret = i2c_transfer(phy->i2c_client->adapter, msgs, ARRAY_SIZE(msgs));
 +	usleep_range(250, 300); // wait default GUARD_TIME of 250µs
 +
-+	} while(ret < 0 && i < TPM_RETRY );
++	} while(ret < 0 && i++ < TPM_RETRY );
 +	
 +	if (ret < 0)
 +		return ret;
@@ -549,7 +549,7 @@ diff -Naur tpm_orig/tpm_tis_i2c.c tpm/tpm_tis_i2c.c
 +					   ARRAY_SIZE(msgs));
 +			usleep_range(250, 300); // wait default GUARD_TIME of 250µs
 +
-+			} while(ret < 0 && i < TPM_RETRY );
++			} while(ret < 0 && i++ < TPM_RETRY );
 +		}
 +	} else {
 +		u8 reg = address_to_register(addr);
@@ -572,7 +572,7 @@ diff -Naur tpm_orig/tpm_tis_i2c.c tpm/tpm_tis_i2c.c
 +		ret = i2c_transfer(phy->i2c_client->adapter, msgs, ARRAY_SIZE(msgs));
 +	   usleep_range(250, 300); // wait default GUARD_TIME of 250µs
 +
-+		} while(ret < 0 && i < TPM_RETRY );
++		} while(ret < 0 && i++ < TPM_RETRY );
 +	}
 +
 +	if (ret < 0)
