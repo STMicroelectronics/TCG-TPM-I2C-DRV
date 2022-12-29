@@ -23,7 +23,14 @@ Raspbian
 #### run from the char directory with :
 patch -b -p0 < patchTPMv_5_10_1.patch
 
+patch -b -p0 < 02-patchTPMv_5_10_1.patch
 
+#### 02-patchTPMv_5_10_1.patch:
+Fixed a series of issues in tpm_tis_i2c_read_bytes functions that caused when the number of bytes read exceeding 260 (limited to 0xff in this case).
+
+1. When the number of bytes read in tpm_tis_i2c_read_bytes function exceeds 260, the read will fail, and the variable i will not increment normally, causing it to freeze in the while loop.
+
+2. When tpm_tis_i2c_read_bytes function, the read failure returns a negative value, and the normal variable 'i' is incremented normally, after exiting while, due to the mismatch of the 'size' variable type in the tpm_tis_recv, it will cause a stack overflow when the crc_ccitt in the tpm_tis_i2c_check_data function.
 ### Patch version : 5.10.1
 CHANGELOG : 
 
