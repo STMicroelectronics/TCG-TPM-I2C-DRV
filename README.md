@@ -13,6 +13,7 @@ directly after flash your sd card :
 ### merge or modify config.txt
 #### remove  # on (to activate SPI and I2C bus)
 dtparam=i2c_arm=on
+
 dtparam=spi=on
 #### add (to activate I2C and SPI TPM driver)
 dtoverlay=tpm-stm
