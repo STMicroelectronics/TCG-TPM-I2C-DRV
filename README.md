@@ -1,38 +1,42 @@
 # TCG-TPM-I2C-DRV
 Linux driver for I2C TPM compliant with TCG specification
+I2C TPM driver is natively in linux kernel since 6.1.
+We provide overlay file to simplify TPM activation.
 
-This patch can be used to create a driver for an STMicroelectronics TPM withan I²C interface in a 5.4 Linux kernel.
-It also improves the performance with an optimized polling during the communication with the TPM. 
+## Advising
+Select branch 5.4.y and 5.10.y, for your legacy linux branch to integrate a driver for an STMicroelectronics TPM with an I²C interface.
 
-## Tested with :
+## TPM activation by overlay file
 
-### Platform :
-Raspberry Pi 3B+, Raspberry Pi 4B
-### OS : 
+directly after flash your sd card :
+### Copy tpm-stm.dtbo file in "overlays" directory 
+### merge or modify config.txt
+#### remove  # on (to activate SPI and I2C bus)
+dtparam=i2c_arm=on
+dtparam=spi=on
+#### add (to activate I2C and SPI TPM driver)
+dtoverlay=tpm-stm
+
+### Tested with :
+
+#### Platform :
+Raspberry Pi 3B+, Raspberry Pi 4B, Raspberry Pi 5
+#### OS : 
 Raspbian 
-### Linux kernel version : 
-5.4.83, downloaded from https://github.com/raspberrypi/linux
-### TPM family :
+#### Linux kernel version : 
+6.1 , downloaded from https://github.com/raspberrypi/linux
+
+#### TPM family :
 [ST33TPHF20I2C](https://www.st.com/en/secure-mcus/st33tphf20i2c.html), [ST33TPHF2XI2C](https://www.st.com/en/secure-mcus/st33tphf2xi2c.html), [ST33TPHF2EI2C](https://www.st.com/en/secure-mcus/st33tphf2ei2c.html), [ST33GTPMAI2C](https://www.st.com/en/secure-mcus/st33gtpmai2c.html), [ST33GTPMII2C](https://www.st.com/en/secure-mcus/st33gtpmii2c.html)
 
-## Patch Application
+## STM32M1xx-DK platform
+To integrate I2C or SPI TPM on
+- [STM32MP157F-DK2](https://www.st.com/en/evaluation-tools/stm32mp157f-dk2.html) board.
+- [STM32MP135F-DK](https://www.st.com/en/evaluation-tools/stm32mp135f-dk.html) board.
+  
+please go to dedicated github :
+[STM32M1xx-DK TPM integration](https://github.com/STMicroelectronics/meta-st-x-linux-tpm)
 
-### To apply the patch
-#### download Linux kernel sources
-#### copy the patch into the linux/drivers/char directory
-#### run from the char directory with :
-patch -b -p0 < patchTPMv_5_4_2.patch
+**The main documentation linked with this X-LINUX package is available on [X-LINUX-TPM wiki article](https://wiki.st.com/stm32mpu/wiki/X-LINUX-TPM_expansion_package).**
 
 
-### Patch version : 5.4.2
-CHANGELOG : 
-
-#### 5.4.2 : 
-- Added remove function for tpm_tis_i2c
-
-#### 5.4.1
-- Added optimisation of polling in tpm-interface.c 
-- Fixed (i<0) into (i<=0) for a u32
-
-#### 5.4.0
-- Created I²C TPM Driver for kernel 5.4
